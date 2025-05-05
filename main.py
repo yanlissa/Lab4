@@ -65,14 +65,14 @@ def show_passwords():
 
 init_db()
 app = Window(themename="flatly")
-app.title("Passcheck")
+app.title("Passwork")
 app.geometry("420x380")
 
 notebook = Notebook(app)
 notebook.pack(fill="both", expand=True, padx=10, pady=10)
 
 gen_frame = Frame(notebook)
-notebook.add(gen_frame, text="Passwork")
+notebook.add(gen_frame, text="Passgen")
 
 Label(gen_frame, text="Длина пароля:").pack(pady=10)
 length_entry = Entry(gen_frame)
