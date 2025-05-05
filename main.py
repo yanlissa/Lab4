@@ -1,11 +1,12 @@
 from ttkbootstrap import Window
-from tkinter import BooleanVar, StringVar
+from tkinter import BooleanVar, StringVar, Toplevel
 from ttkbootstrap.dialogs import Messagebox
 from ttkbootstrap.widgets import Entry, Checkbutton, Button, Label, Notebook, Frame
 import pyperclip
 
 from checker.checkpass import check_password_strength
 from generator.genpass import generate_password
+from storage.vault import init_db, save_password, load_passwords
 
 def check_pass():
     try:
@@ -44,6 +45,25 @@ def copy_to_clipboard():
         pyperclip.copy(pwd)
         Messagebox.show_info("Скопировано", "Пароль скопирован в буфер обмена")
 
+def save_to_storage():
+    pwd = pass_var.get().strip()
+    service = service_var.get().strip()
+    login = login_var.get().strip()
+    if not (pwd and service and login):
+        Messagebox.show_error("Введите сервис, логин и пароль", "Ошибка")
+        return
+    save_password(service, login, pwd)
+    Messagebox.show_info("Сохранено", "Пароль сохранён!")
+
+def show_passwords():
+    records = load_passwords()
+    window = Toplevel(app)
+    window.title("Сохранённые пароли")
+    window.geometry("420x380")
+    for i, (id_, service, login, password) in enumerate(records, 1):
+        Label(window, text=f"{i}. {service} | {login} | {password}").pack(anchor='w', padx=10, pady=2)
+
+init_db()
 app = Window(themename="flatly")
 app.title("Passcheck")
 app.geometry("420x380")
@@ -86,5 +106,22 @@ Button(check_frame, text="Проверка", command=check_pass, bootstyle="succ
 
 result_check = StringVar()
 Label(check_frame, textvariable=result_check, width=15).pack(pady=5)
+service_frame = Frame(notebook)
+notebook.add(service_frame, text="Passread")
+
+Label(service_frame, text="Сервис:").pack(pady=5)
+service_var = StringVar()
+Entry(service_frame, textvariable=service_var, width=30).pack(pady=5)
+
+Label(service_frame, text="Логин:").pack(pady=5)
+login_var = StringVar()
+Entry(service_frame, textvariable=login_var, width=30).pack(pady=5)
+
+Label(service_frame, text="Пароль:").pack(pady=5)
+pass_var = StringVar()
+Entry(service_frame, textvariable=pass_var, width=30).pack(pady=5)
+
+Button(service_frame, text="Сохранить пароль", command=save_to_storage, bootstyle="primary").pack(pady=10)
+Button(service_frame, text="Показать сохранённые", command=show_passwords, bootstyle="info").pack(pady=5)
 
 app.mainloop()
