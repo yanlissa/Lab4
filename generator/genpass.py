@@ -2,10 +2,6 @@ import secrets
 import string
 
 def generate_password(length=12, use_upper=True, use_lower=True, use_digits=True, use_symbols=True):
-    
-    if length < 4 or length > 20:
-        raise ValueError("Длина пароля некорректна")
-    
     chars = ''
     if use_upper:
         chars += string.ascii_uppercase
