@@ -1,8 +1,19 @@
-from ttkbootstrap.widgets import Entry, Checkbutton, Button
-import ttkbootstrap as ttk
+from ttkbootstrap import Window
+from tkinter import BooleanVar, StringVar
+from ttkbootstrap.dialogs import Messagebox
+from ttkbootstrap.widgets import Entry, Checkbutton, Button, Label, Notebook, Frame
 import pyperclip
 
+from checker.checkpass import check_password_strength
 from generator.genpass import generate_password
+
+def check_pass():
+    try:
+        pwd = password_entry.get()
+        res = check_password_strength(pwd)
+        result_check.set(res)
+    except ValueError as e:
+        Messagebox.show_error(str(e), "Ошибка")
 
 def generate():
     try:
@@ -21,42 +32,59 @@ def generate():
     except ValueError as e:
         msg = str(e)
         if msg == "Нужно выбрать хотя бы один тип символов":
-            ttk.dialogs.Messagebox.show_error(msg, "Ошибка")
+            Messagebox.show_error(msg, "Ошибка")
         elif msg == "Неверная длина":
-            ttk.dialogs.Messagebox.show_error("Введите длину пароля от 1 до 25", "Ошибка")
+            Messagebox.show_error("Введите длину пароля от 1 до 25", "Ошибка")
         else:
-            ttk.dialogs.Messagebox.show_error("Проверьте введённые данные", "Ошибка")
+            Messagebox.show_error("Проверьте введённые данные", "Ошибка")
         
 def copy_to_clipboard():
     pwd = result_var.get()
     if pwd:
         pyperclip.copy(pwd)
-        ttk.dialogs.Messagebox.show_info("Скопировано", "Пароль скопирован в буфер обмена")
+        Messagebox.show_info("Скопировано", "Пароль скопирован в буфер обмена")
 
+app = Window(themename="flatly")
+app.title("Passcheck")
+app.geometry("420x380")
 
-app = ttk.Window(themename="flatly")
-app.title("Passwork")
-app.geometry("400x300")
+notebook = Notebook(app)
+notebook.pack(fill="both", expand=True, padx=10, pady=10)
 
-ttk.Label(app, text="Длина пароля:").pack(pady=10)
-length_entry = Entry(app)
+gen_frame = Frame(notebook)
+notebook.add(gen_frame, text="Passwork")
+
+Label(gen_frame, text="Длина пароля:").pack(pady=10)
+length_entry = Entry(gen_frame)
 length_entry.pack()
 
-upper_var = ttk.BooleanVar(value=False)
-lower_var = ttk.BooleanVar(value=False)
-digits_var = ttk.BooleanVar(value=False)
-symbols_var = ttk.BooleanVar(value=False)
+upper_var = BooleanVar(value=False)
+lower_var = BooleanVar(value=False)
+digits_var = BooleanVar(value=False)
+symbols_var = BooleanVar(value=False)
 
-Checkbutton(app, text="Заглавные буквы", variable=upper_var).pack(anchor='w', padx=20)
-Checkbutton(app, text="Строчные буквы", variable=lower_var).pack(anchor='w', padx=20)
-Checkbutton(app, text="Цифры", variable=digits_var).pack(anchor='w', padx=20)
-Checkbutton(app, text="Символы", variable=symbols_var).pack(anchor='w', padx=20)
+Checkbutton(gen_frame, text="Заглавные буквы", variable=upper_var).pack(anchor='w', padx=20)
+Checkbutton(gen_frame, text="Строчные буквы", variable=lower_var).pack(anchor='w', padx=20)
+Checkbutton(gen_frame, text="Цифры", variable=digits_var).pack(anchor='w', padx=20)
+Checkbutton(gen_frame, text="Символы", variable=symbols_var).pack(anchor='w', padx=20)
 
-Button(app, text="Сгенерировать", command=generate, bootstyle="success").pack(pady=10)
+Button(gen_frame, text="Сгенерировать", command=generate, bootstyle="success").pack(pady=10)
 
-result_var = ttk.StringVar()
-Entry(app, textvariable=result_var, width=30).pack(pady=5)
+result_var = StringVar()
+Entry(gen_frame, textvariable=result_var, width=30).pack(pady=5)
 
-Button(app, text="Скопировать", command=copy_to_clipboard, bootstyle="secondary").pack(pady=5)
+Button(gen_frame, text="Скопировать", command=copy_to_clipboard, bootstyle="secondary").pack(pady=5)
+
+check_frame = Frame(notebook)
+notebook.add(check_frame, text="Passcheck")
+
+Label(check_frame, text="Введите пароль:").pack(pady=10)
+password_entry = Entry(check_frame)
+password_entry.pack()
+
+Button(check_frame, text="Проверка", command=check_pass, bootstyle="success").pack(pady=10)
+
+result_check = StringVar()
+Label(check_frame, textvariable=result_check, width=15).pack(pady=5)
 
 app.mainloop()
